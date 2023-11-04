@@ -1,18 +1,122 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>PDF Text Extractor and Transaction Extraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0c3483;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 0 auto;
+            position: absolute;
+            left: 30%;
+            top: 60px;
+            transform: translateX(-50%);
+            font-size: 15px;
+            width: 50vw;
+        }
+
+        #browseButton {
+            display: block;
+            margin: 0 auto;
+            background-color: #0f9f50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 15px;
+            position: absolute;
+            right: 15px;
+            top: 50px;
+        }
+
+        #ExtractedTransactions {
+            display: none;
+            margin-top: 20px;
+        }
+
+        h3 {
+            color: #0c3483;
+        }
+
+        input[type="text"] {
+            margin-top: 10px;
+            padding: 5px;
+            width: 88vw;
+        }
+
+        #filterButton {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #totalAmount {
+            position: absolute;
+            top: 102px;
+            right: 40px;
+            color: #0c3483;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #amountSum {
+            font-weight: bold;
+            color: #e00b0b;
+        }
+
+        @media (max-width: 600px) {
+            input[type="file"], #browseButton {
+                display: block;
+                margin: 0 auto;
+                width: 80%;
+            }
+
+            #filterDescription, #filterButton {
+                width: 80%;
+            }
+
+            table {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>PDF Text Extractor and Transaction Extraction</h1>
+    <h1>Calculate Expense</h1>
 
     <input type="file" id="pdfFileInput" accept=".pdf">
     <button id="browseButton">Get Transactions</button>
 
-    <hr>
+    <hr style="margin-top:35px;">
 
-    <div id="ExtractedTransactions" style="display: none;">
+    <div id="ExtractedTransactions">
         <h3>Extracted Transactions:</h3>
 
         <input type="text" id="filterDescription" placeholder="Filter by Description">
@@ -126,4 +230,3 @@
     </script>
 </body>
 </html>
-
