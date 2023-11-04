@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Text Extractor and Transaction Extraction</title>
+</head>
+<body>
+    <h1>PDF Text Extractor and Transaction Extraction</h1>
+
+    <input type="file" id="pdfFileInput" accept=".pdf">
+    <button id="browseButton">Get Transactions</button>
+
+    <hr>
+
+    <div id="ExtractedTransactions" style="display: none;">
+        <h3>Extracted Transactions:</h3>
+
+        <input type="text" id="filterDescription" placeholder="Filter by Description">
+        <button id="filterButton">Filter</button>
+
+        <table id="transactionTable">
+            <thead>
+                <tr>
+                    <th>Transaction Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <p id="totalAmount">Total Amount: <span id="amountSum">0.00</span></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js"></script>
+    <script>
+        var transactions = [];
+
+        document.getElementById('browseButton').addEventListener('click', function () {
+            var fileInput = document.getElementById('pdfFileInput');
+            var file = fileInput.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var data = new Uint8Array(e.target.result);
+
+                    pdfjsLib.getDocument(data).promise.then(function (pdfDoc) {
+                        var text = '';
+                        var numPages = pdfDoc.numPages;
+                        var promises = [];
+
+                        for (var i = 1; i <= numPages; i++) {
+                            promises.push(pdfDoc.getPage(i).then(function (page) {
+                                return page.getTextContent().then(function (content) {
+                                    var pageText = content.items.map(function (item) {
+                                        return item.str;
+                                    }).join(' ');
+
+                                    text += pageText + '\n';
+                                });
+                            }));
+                        }
+
+                        Promise.all(promises).then(function () {
+                            extractTransactions(text);
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        function extractTransactions(inputText) {
+            const regex = /(\d{2}\/\d{2}\/\d{4})\s+(?:\d{2}:\d{2}:\d{2}\s+)?(.*?)\s+([\d,]+\.\d{2})(?: Cr)?/g;
+
+            transactions = [];
+
+            let match;
+            while ((match = regex.exec(inputText)) !== null) {
+                const transaction = {
+                    "Transaction Date": match[1],
+                    "Description": match[2].trim(),
+                    "Amount": parseFloat(match[3].replace(/,/g, '').replace(',', '.')),
+                };
+                transactions.push(transaction);
+            }
+            if (transactions.length > 0) {
+                document.getElementById('ExtractedTransactions').style.display = 'block';
+                populateTable(transactions);
+            }
+        }
+
+        function populateTable(data) {
+            var tableBody = document.querySelector("#transactionTable tbody");
+            var totalAmount = 0;
+
+            tableBody.innerHTML = "";
+
+            data.forEach(function (transaction) {
+                var row = tableBody.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+
+                cell1.innerHTML = transaction["Transaction Date"];
+                cell2.innerHTML = transaction["Description"];
+                cell3.innerHTML = transaction["Amount"];
+                totalAmount += parseFloat(transaction["Amount"]);
+            });
+
+            // Update the total amount
+            document.querySelector("#amountSum").textContent = totalAmount.toFixed(2);
+        }
+
+        // Filter transactions based on the entered description
+        var filterButton = document.querySelector("#filterButton");
+        filterButton.addEventListener("click", function () {
+            var filterDescription = document.querySelector("#filterDescription").value;
+            var filteredTransactions = transactions.filter(function (transaction) {
+                return transaction["Description"].includes(filterDescription);
+            });
+            populateTable(filteredTransactions);
+        });
+    </script>
+</body>
+</html>
+
